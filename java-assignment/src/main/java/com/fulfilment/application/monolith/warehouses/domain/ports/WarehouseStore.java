@@ -7,6 +7,10 @@ public interface WarehouseStore {
 
   List<Warehouse> getAll();
 
+  List<Warehouse> getPage(int page, int size);
+
+  long countActive();
+
   void create(Warehouse warehouse);
 
   void update(Warehouse warehouse);

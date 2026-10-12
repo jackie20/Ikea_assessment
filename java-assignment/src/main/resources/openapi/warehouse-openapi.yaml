@@ -8,15 +8,26 @@ paths:
   /warehouse:
     get:
       summary: List all warehouses units
+      parameters:
+        - name: page
+          in: query
+          description: Zero-based page index
+          schema:
+            type: integer
+            default: 0
+        - name: size
+          in: query
+          description: Number of items per page
+          schema:
+            type: integer
+            default: 20
       responses:
         '200':
-          description: A list of warehouse units
+          description: A paginated list of warehouse units
           content:
             application/json:
               schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/Warehouse'
+                $ref: '#/components/schemas/WarehousePage'
     post:
       summary: Create a new warehouse unit
       requestBody:
@@ -32,7 +43,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Warehouse'
-        
         '400':
           description: Invalid request parameters
 
@@ -73,9 +83,9 @@ paths:
   /warehouse/{businessUnitCode}/replacement:
     post:
       summary: Replace the current active Warehouse
-      description: | 
+      description: |
         Replaces the current active Warehouse identified by `businessUnitCode` unit by a new Warehouse provided in the request body
-        A Warehouse can be replaced by another Warehouse with the same Business Unit Code. 
+        A Warehouse can be replaced by another Warehouse with the same Business Unit Code.
         That means that the previous Warehouse will be archived and the new Warehouse will be created assuming its place.
       parameters:
         - name: businessUnitCode
@@ -99,9 +109,9 @@ paths:
                 $ref: '#/components/schemas/Warehouse'
         '404':
           description: Warehouse unit not found
-
         '400':
           description: Invalid request parameters
+
 components:
   schemas:
     Warehouse:
@@ -122,3 +132,24 @@ components:
         stock:
           type: integer
           example: 50
+
+    WarehousePage:
+      type: object
+      properties:
+        content:
+          type: array
+          items:
+            $ref: '#/components/schemas/Warehouse'
+        page:
+          type: integer
+          description: Current zero-based page index
+        size:
+          type: integer
+          description: Page size requested
+        totalElements:
+          type: integer
+          format: int64
+          description: Total number of active warehouses
+        totalPages:
+          type: integer
+          description: Total number of pages

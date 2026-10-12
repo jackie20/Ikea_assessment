@@ -15,6 +15,16 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
   }
 
   @Override
+  public List<Warehouse> getPage(int page, int size) {
+    return find("archivedAt is null").page(page, size).stream().map(DbWarehouse::toWarehouse).toList();
+  }
+
+  @Override
+  public long countActive() {
+    return count("archivedAt is null");
+  }
+
+  @Override
   public void create(Warehouse warehouse) {
     var db = new DbWarehouse();
     db.businessUnitCode = warehouse.businessUnitCode;

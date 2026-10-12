@@ -8,10 +8,18 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.ArchiveWareho
 import com.fulfilment.application.monolith.warehouses.domain.ports.CreateWarehouseOperation;
 import com.fulfilment.application.monolith.warehouses.domain.ports.ReplaceWarehouseOperation;
 import com.warehouse.api.WarehouseResource;
+import com.warehouse.api.beans.WarehousePage;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
+import jakarta.ws.rs.DefaultValue;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Path;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.WebApplicationException;
+import java.math.BigInteger;
+import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
 import org.jboss.logging.Logger;
@@ -28,8 +36,21 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Inject private ReplaceWarehouseOperation replaceWarehouseOperation;
 
   @Override
-  public List<com.warehouse.api.beans.Warehouse> listAllWarehousesUnits() {
-    return warehouseRepository.getAll().stream().map(this::toApiWarehouse).toList();
+  public WarehousePage listAllWarehousesUnits(
+      @QueryParam("page") @DefaultValue("0") BigInteger page,
+      @QueryParam("size") @DefaultValue("20") BigInteger size) {
+    int p = page == null ? 0 : page.intValue();
+    int s = (size == null || size.intValue() < 1) ? 20 : size.intValue();
+    List<com.warehouse.api.beans.Warehouse> content =
+        warehouseRepository.getPage(p, s).stream().map(this::toApiWarehouse).toList();
+    long total = warehouseRepository.countActive();
+    WarehousePage wp = new WarehousePage();
+    wp.setContent(content);
+    wp.setPage(p);
+    wp.setSize(s);
+    wp.setTotalElements(total);
+    wp.setTotalPages(s > 0 ? (int) Math.ceil((double) total / s) : 0);
+    return wp;
   }
 
   @Override
@@ -88,6 +109,24 @@ public class WarehouseResourceImpl implements WarehouseResource {
     }
   }
 
+  @GET
+  @Path("export")
+  @Produces("text/csv")
+  public Response exportToCsv() {
+    LOG.infof("GET /warehouse/export");
+    StringBuilder csv = new StringBuilder("businessUnitCode,location,capacity,stock\n");
+    for (Warehouse w : warehouseRepository.getAll()) {
+      csv.append(escape(w.businessUnitCode)).append(',')
+          .append(escape(w.location)).append(',')
+          .append(w.capacity).append(',')
+          .append(w.stock).append('\n');
+    }
+    return Response.ok(csv.toString())
+        .header("Content-Disposition", "attachment; filename=\"warehouses.csv\"")
+        .type(MediaType.valueOf("text/csv"))
+        .build();
+  }
+
   private Warehouse toDomainWarehouse(com.warehouse.api.beans.Warehouse api) {
     var domain = new Warehouse();
     domain.businessUnitCode = api.getBusinessUnitCode();
@@ -104,5 +143,13 @@ public class WarehouseResourceImpl implements WarehouseResource {
     api.setCapacity(domain.capacity);
     api.setStock(domain.stock);
     return api;
+  }
+
+  private String escape(String value) {
+    if (value == null) return "";
+    if (value.contains(",") || value.contains("\"") || value.contains("\n")) {
+      return "\"" + value.replace("\"", "\"\"") + "\"";
+    }
+    return value;
   }
 }
