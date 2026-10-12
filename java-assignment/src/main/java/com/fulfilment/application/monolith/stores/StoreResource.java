@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fulfilment.application.monolith.common.PaginatedResponse;
 import io.quarkus.panache.common.Sort;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.enterprise.event.Event;
 import jakarta.inject.Inject;
@@ -37,6 +38,7 @@ public class StoreResource {
   private static final Logger LOGGER = Logger.getLogger(StoreResource.class.getName());
 
   @GET
+  @RolesAllowed({"admin", "user"})
   public PaginatedResponse<Store> get(
       @QueryParam("page") @DefaultValue("0") int page,
       @QueryParam("size") @DefaultValue("20") int size) {
@@ -50,6 +52,7 @@ public class StoreResource {
   @GET
   @Path("export")
   @Produces("text/csv")
+  @RolesAllowed({"admin", "user"})
   public Response export() {
     List<Store> all = Store.listAll(Sort.by("name"));
     StringBuilder csv = new StringBuilder("id,name,quantityProductsInStock\n");
@@ -66,6 +69,7 @@ public class StoreResource {
 
   @GET
   @Path("{id}")
+  @RolesAllowed({"admin", "user"})
   public Store getSingle(Long id) {
     Store entity = Store.findById(id);
     if (entity == null) {
@@ -76,6 +80,7 @@ public class StoreResource {
 
   @POST
   @Transactional
+  @RolesAllowed("admin")
   public Response create(Store store) {
     if (store.id != null) {
       throw new WebApplicationException("Id was invalidly set on request.", 422);
@@ -92,6 +97,7 @@ public class StoreResource {
   @PUT
   @Path("{id}")
   @Transactional
+  @RolesAllowed("admin")
   public Store update(Long id, Store updatedStore) {
     if (updatedStore.name == null) {
       throw new WebApplicationException("Store Name was not set on request.", 422);
@@ -114,6 +120,7 @@ public class StoreResource {
   @PATCH
   @Path("{id}")
   @Transactional
+  @RolesAllowed("admin")
   public Store patch(Long id, Store updatedStore) {
     if (updatedStore.name == null) {
       throw new WebApplicationException("Store Name was not set on request.", 422);
@@ -141,6 +148,7 @@ public class StoreResource {
   @DELETE
   @Path("{id}")
   @Transactional
+  @RolesAllowed("admin")
   public Response delete(Long id) {
     Store entity = Store.findById(id);
     if (entity == null) {

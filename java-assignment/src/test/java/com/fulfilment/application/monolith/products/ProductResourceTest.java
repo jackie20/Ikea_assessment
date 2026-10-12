@@ -4,18 +4,15 @@ import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.containsString;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import io.restassured.http.ContentType;
 import org.junit.jupiter.api.MethodOrderer;
 import org.junit.jupiter.api.Order;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestMethodOrder;
 
-/**
- * Tests the error and boundary paths of ProductResource not covered by ProductEndpointTest.
- * ProductEndpointTest covers the happy path (GET list, DELETE, GET list again).
- * This class covers the 404/422 branches on all operations.
- */
 @QuarkusTest
+@TestSecurity(user = "admin", roles = {"admin", "user"})
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class ProductResourceTest {
 

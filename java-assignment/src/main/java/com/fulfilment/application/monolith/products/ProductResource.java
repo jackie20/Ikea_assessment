@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.fulfilment.application.monolith.common.PaginatedResponse;
 import io.quarkus.panache.common.Sort;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.ApplicationScoped;
 import jakarta.inject.Inject;
 import jakarta.transaction.Transactional;
@@ -35,6 +36,7 @@ public class ProductResource {
   private static final Logger LOGGER = Logger.getLogger(ProductResource.class.getName());
 
   @GET
+  @RolesAllowed({"admin", "user"})
   public PaginatedResponse<Product> get(
       @QueryParam("page") @DefaultValue("0") int page,
       @QueryParam("size") @DefaultValue("20") int size) {
@@ -46,6 +48,7 @@ public class ProductResource {
   @GET
   @Path("export")
   @Produces("text/csv")
+  @RolesAllowed({"admin", "user"})
   public Response export() {
     StringBuilder csv = new StringBuilder("id,name,description,price,stock\n");
     for (Product p : productRepository.listAll(Sort.by("name"))) {
@@ -63,6 +66,7 @@ public class ProductResource {
 
   @GET
   @Path("{id}")
+  @RolesAllowed({"admin", "user"})
   public Product getSingle(Long id) {
     Product entity = productRepository.findById(id);
     if (entity == null) {
@@ -73,6 +77,7 @@ public class ProductResource {
 
   @POST
   @Transactional
+  @RolesAllowed("admin")
   public Response create(Product product) {
     if (product.id != null) {
       throw new WebApplicationException("Id was invalidly set on request.", 422);
@@ -85,6 +90,7 @@ public class ProductResource {
   @PUT
   @Path("{id}")
   @Transactional
+  @RolesAllowed("admin")
   public Product update(Long id, Product product) {
     if (product.name == null) {
       throw new WebApplicationException("Product Name was not set on request.", 422);
@@ -109,6 +115,7 @@ public class ProductResource {
   @DELETE
   @Path("{id}")
   @Transactional
+  @RolesAllowed("admin")
   public Response delete(Long id) {
     Product entity = productRepository.findById(id);
     if (entity == null) {

@@ -5,9 +5,11 @@ import static org.hamcrest.CoreMatchers.containsString;
 import static org.hamcrest.core.IsNot.not;
 
 import io.quarkus.test.junit.QuarkusTest;
+import io.quarkus.test.security.TestSecurity;
 import org.junit.jupiter.api.Test;
 
 @QuarkusTest
+@TestSecurity(user = "admin", roles = {"admin", "user"})
 public class ProductEndpointTest {
 
   @Test

@@ -9,6 +9,7 @@ import com.fulfilment.application.monolith.warehouses.domain.ports.CreateWarehou
 import com.fulfilment.application.monolith.warehouses.domain.ports.ReplaceWarehouseOperation;
 import com.warehouse.api.WarehouseResource;
 import com.warehouse.api.beans.WarehousePage;
+import jakarta.annotation.security.RolesAllowed;
 import jakarta.enterprise.context.RequestScoped;
 import jakarta.inject.Inject;
 import jakarta.validation.constraints.NotNull;
@@ -36,6 +37,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Inject private ReplaceWarehouseOperation replaceWarehouseOperation;
 
   @Override
+  @RolesAllowed({"admin", "user"})
   public WarehousePage listAllWarehousesUnits(
       @QueryParam("page") @DefaultValue("0") BigInteger page,
       @QueryParam("size") @DefaultValue("20") BigInteger size) {
@@ -54,6 +56,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   }
 
   @Override
+  @RolesAllowed("admin")
   @ResponseStatus(201)
   public com.warehouse.api.beans.Warehouse createANewWarehouseUnit(
       @NotNull com.warehouse.api.beans.Warehouse data) {
@@ -70,6 +73,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   }
 
   @Override
+  @RolesAllowed({"admin", "user"})
   public com.warehouse.api.beans.Warehouse getAWarehouseUnitByID(String id) {
     LOG.debugf("GET /warehouse/%s", id);
     Warehouse warehouse = warehouseRepository.findByBusinessUnitCode(id);
@@ -81,6 +85,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   }
 
   @Override
+  @RolesAllowed("admin")
   public void archiveAWarehouseUnitByID(String id) {
     LOG.infof("DELETE /warehouse/%s — archiving", id);
     Warehouse warehouse = warehouseRepository.findByBusinessUnitCode(id);
@@ -92,6 +97,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   }
 
   @Override
+  @RolesAllowed("admin")
   public com.warehouse.api.beans.Warehouse replaceTheCurrentActiveWarehouse(
       String businessUnitCode, @NotNull com.warehouse.api.beans.Warehouse data) {
     LOG.infof("POST /warehouse/%s/replacement", businessUnitCode);
@@ -112,6 +118,7 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @GET
   @Path("export")
   @Produces("text/csv")
+  @RolesAllowed({"admin", "user"})
   public Response exportToCsv() {
     LOG.infof("GET /warehouse/export");
     StringBuilder csv = new StringBuilder("businessUnitCode,location,capacity,stock\n");
