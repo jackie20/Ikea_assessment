@@ -135,4 +135,49 @@ public class StoreResourceTest {
   public void delete_notFound_returns404() {
     given().when().delete(PATH + "/9999").then().statusCode(404);
   }
+
+  @Test
+  @Order(11)
+  public void update_notFound_returns404() {
+    String body = """
+        { "name": "GHOST-STORE", "quantityProductsInStock": 1 }
+        """;
+    given()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .when()
+        .put(PATH + "/9999")
+        .then()
+        .statusCode(404);
+  }
+
+  @Test
+  @Order(12)
+  public void patch_withoutName_returns422() {
+    String body = """
+        { "quantityProductsInStock": 5 }
+        """;
+    given()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .when()
+        .patch(PATH + "/2")
+        .then()
+        .statusCode(422);
+  }
+
+  @Test
+  @Order(13)
+  public void patch_notFound_returns404() {
+    String body = """
+        { "name": "GHOST", "quantityProductsInStock": 1 }
+        """;
+    given()
+        .contentType(ContentType.JSON)
+        .body(body)
+        .when()
+        .patch(PATH + "/9999")
+        .then()
+        .statusCode(404);
+  }
 }

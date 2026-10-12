@@ -14,10 +14,13 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import java.util.List;
+import org.jboss.logging.Logger;
 import org.jboss.resteasy.reactive.ResponseStatus;
 
 @RequestScoped
 public class WarehouseResourceImpl implements WarehouseResource {
+
+  private static final Logger LOG = Logger.getLogger(WarehouseResourceImpl.class);
 
   @Inject private WarehouseRepository warehouseRepository;
   @Inject private CreateWarehouseOperation createWarehouseOperation;
@@ -33,19 +36,24 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @ResponseStatus(201)
   public com.warehouse.api.beans.Warehouse createANewWarehouseUnit(
       @NotNull com.warehouse.api.beans.Warehouse data) {
+    LOG.infof("POST /warehouse — creating BU '%s' at '%s'",
+        data.getBusinessUnitCode(), data.getLocation());
     try {
       Warehouse domain = toDomainWarehouse(data);
       createWarehouseOperation.create(domain);
       return toApiWarehouse(domain);
     } catch (WarehouseValidationException e) {
+      LOG.warnf("Warehouse creation rejected: %s", e.getMessage());
       throw new WebApplicationException(e.getMessage(), Response.Status.BAD_REQUEST);
     }
   }
 
   @Override
   public com.warehouse.api.beans.Warehouse getAWarehouseUnitByID(String id) {
+    LOG.debugf("GET /warehouse/%s", id);
     Warehouse warehouse = warehouseRepository.findByBusinessUnitCode(id);
     if (warehouse == null) {
+      LOG.warnf("Warehouse not found: %s", id);
       throw new WebApplicationException("Warehouse not found: " + id, Response.Status.NOT_FOUND);
     }
     return toApiWarehouse(warehouse);
@@ -53,8 +61,10 @@ public class WarehouseResourceImpl implements WarehouseResource {
 
   @Override
   public void archiveAWarehouseUnitByID(String id) {
+    LOG.infof("DELETE /warehouse/%s — archiving", id);
     Warehouse warehouse = warehouseRepository.findByBusinessUnitCode(id);
     if (warehouse == null) {
+      LOG.warnf("Archive rejected: warehouse not found: %s", id);
       throw new WebApplicationException("Warehouse not found: " + id, Response.Status.NOT_FOUND);
     }
     archiveWarehouseOperation.archive(warehouse);
@@ -63,14 +73,17 @@ public class WarehouseResourceImpl implements WarehouseResource {
   @Override
   public com.warehouse.api.beans.Warehouse replaceTheCurrentActiveWarehouse(
       String businessUnitCode, @NotNull com.warehouse.api.beans.Warehouse data) {
+    LOG.infof("POST /warehouse/%s/replacement", businessUnitCode);
     try {
       Warehouse newWarehouse = toDomainWarehouse(data);
       newWarehouse.businessUnitCode = businessUnitCode;
       replaceWarehouseOperation.replace(newWarehouse);
       return toApiWarehouse(newWarehouse);
     } catch (WarehouseNotFoundException e) {
+      LOG.warnf("Replace rejected: %s", e.getMessage());
       throw new WebApplicationException(e.getMessage(), Response.Status.NOT_FOUND);
     } catch (WarehouseValidationException e) {
+      LOG.warnf("Replace rejected: %s", e.getMessage());
       throw new WebApplicationException(e.getMessage(), Response.Status.BAD_REQUEST);
     }
   }

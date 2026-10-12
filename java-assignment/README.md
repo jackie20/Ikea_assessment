@@ -61,7 +61,7 @@ Tests use an H2 in-memory database and do **not** require Docker.
 ./mvnw clean test
 ```
 
-Expected: **44 tests, 0 failures**.
+Expected: **54 tests, 0 failures**.
 
 ## Generating the coverage report
 
@@ -72,8 +72,18 @@ Expected: **44 tests, 0 failures**.
 Generates the JaCoCo HTML report at `target/site/jacoco/index.html`.
 
 **Measured coverage (verified):**
-- Line coverage: **86%** (threshold: 70%)
-- Branch coverage: **70%** (threshold: 70%)
+- Line coverage: **94%** (threshold: 80% ✅)
+- Branch coverage: **86%** (threshold: 75% ✅)
+
+## Health checks
+
+The application exposes SmallRye Health endpoints:
+
+| Endpoint | Description |
+|----------|-------------|
+| `GET /q/health` | Combined liveness + readiness |
+| `GET /q/health/live` | Liveness (is the process up?) |
+| `GET /q/health/ready` | Readiness — includes `warehouse-store` check that queries the database |
 
 ## API endpoints
 

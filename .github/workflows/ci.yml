@@ -20,15 +20,15 @@ jobs:
           distribution: "temurin"
           cache: maven
 
-      - name: Build and run unit tests
+      - name: Build and run all unit + integration tests
         working-directory: java-assignment
         run: ./mvnw -B clean test
 
-      - name: Generate JaCoCo coverage report and verify threshold
+      - name: Verify JaCoCo coverage thresholds (line ≥ 80%, branch ≥ 75%)
         working-directory: java-assignment
         run: ./mvnw -B verify -DskipITs
 
-      - name: Upload JaCoCo report
+      - name: Upload JaCoCo HTML report
         if: always()
         uses: actions/upload-artifact@v4
         with:
