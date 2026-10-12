@@ -54,7 +54,6 @@ public class WarehouseRepository implements WarehouseStore, PanacheRepository<Db
         .orElse(null);
   }
 
-  /** Returns all active warehouses at the given location identifier. */
   public List<Warehouse> findActiveByLocation(String locationId) {
     return find("location = ?1 and archivedAt is null", locationId).stream()
         .map(DbWarehouse::toWarehouse)

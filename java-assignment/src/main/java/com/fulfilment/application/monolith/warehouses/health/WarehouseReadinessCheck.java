@@ -7,10 +7,6 @@ import org.eclipse.microprofile.health.HealthCheck;
 import org.eclipse.microprofile.health.HealthCheckResponse;
 import org.eclipse.microprofile.health.Readiness;
 
-/**
- * Readiness probe: verifies the warehouse data store is reachable before accepting traffic.
- * Exposed at GET /q/health/ready
- */
 @Readiness
 @ApplicationScoped
 public class WarehouseReadinessCheck implements HealthCheck {
